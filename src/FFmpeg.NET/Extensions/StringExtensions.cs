@@ -30,14 +30,14 @@ namespace FFmpeg.NET.Extensions
         public static bool TryGetFullPathIfPathEnvironmentExists(this string fileName, out string fullPath)
         {
             fullPath = string.Empty;
-            var values = Environment.GetEnvironmentVariable("PATH");
-            var pathElements = values?.Split(Path.PathSeparator);
+            string values = Environment.GetEnvironmentVariable("PATH");
+            string[] pathElements = values?.Split(Path.PathSeparator);
 
             if (pathElements == null) return false;
 
-            foreach (var path in pathElements)
+            foreach (string path in pathElements)
             {
-                var tempFullPath = Path.Combine(path, fileName);
+                string tempFullPath = Path.Combine(path, fileName);
                 if (tempFullPath.TryGetFullPathIfFileExists(out fullPath))
                 {
                     return true;

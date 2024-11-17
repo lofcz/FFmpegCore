@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -10,12 +11,12 @@ namespace FFmpeg.NET.Tests.Fixtures
     {
         public BaseFixture()
         {
-            using (var file = File.OpenText("Properties\\launchSettings.json"))
+            using (StreamReader file = File.OpenText("Properties\\launchSettings.json"))
             {
-                var reader = new JsonTextReader(file);
-                var jObject = JObject.Load(reader);
+                JsonTextReader reader = new JsonTextReader(file);
+                JObject jObject = JObject.Load(reader);
 
-                var variables = jObject
+                List<JProperty> variables = jObject
                     .GetValue("profiles")
                     .SelectMany(profiles => profiles.Children())
                     .SelectMany(profile => profile.Children<JProperty>())
@@ -23,7 +24,7 @@ namespace FFmpeg.NET.Tests.Fixtures
                     .SelectMany(prop => prop.Value.Children<JProperty>())
                     .ToList();
 
-                foreach (var variable in variables)
+                foreach (JProperty variable in variables)
                 {
                     Environment.SetEnvironmentVariable(variable.Name, variable.Value.ToString());
                 }

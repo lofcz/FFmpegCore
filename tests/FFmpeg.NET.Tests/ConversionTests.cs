@@ -52,10 +52,10 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Invokes_ConversionCompleteEvent()
         {
-            var output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            OutputFile output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
 
-            var e = await Assert.RaisesAsync<ConversionCompleteEventArgs>(
+            Assert.RaisedEvent<ConversionCompleteEventArgs> e = await Assert.RaisesAsync<ConversionCompleteEventArgs>(
                 x => ffmpeg.Complete += x,
                 x => ffmpeg.Complete -= x,
                 async () => await ffmpeg.ConvertAsync(_fixture.VideoFile, output, default)
@@ -74,11 +74,11 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Should_Throw_Exception_On_Invalid_OutputFile()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
-            var output = new OutputFile("test.txt");
-            var input = _fixture.VideoFile;
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
+            OutputFile output = new OutputFile("test.txt");
+            InputFile input = _fixture.VideoFile;
 
-            var e = await Assert.RaisesAsync<ConversionErrorEventArgs>(
+            Assert.RaisedEvent<ConversionErrorEventArgs> e = await Assert.RaisesAsync<ConversionErrorEventArgs>(
                 x => ffmpeg.Error += x,
                 x => ffmpeg.Error -= x,
                 async () => await ffmpeg.ConvertAsync(input, output, default))
@@ -108,7 +108,7 @@ namespace FFmpeg.NET.Tests
             string fn = $"-i \"{_fixture.AudioFile.FileInfo.FullName}\"";
             string options = $"{fn} {fn} -filter_complex \"[0:0][1:0]concat=n=2:v=0:a=1[out]\" -map \"[out]\" -f segment -segment_time 20 Split%1d.mp3";
 
-            var e = await Assert.RaisesAsync<ConversionProgressEventArgs>(
+            Assert.RaisedEvent<ConversionProgressEventArgs> e = await Assert.RaisesAsync<ConversionProgressEventArgs>(
                 x => ffmpeg.Progress += x,
                 x => ffmpeg.Progress -= x,
                 async () => await ffmpeg.ExecuteAsync(options, default)
@@ -122,10 +122,10 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Raises_ProgressEvent()
         {
-            var output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            OutputFile output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
 
-            var e = await Assert.RaisesAsync<ConversionProgressEventArgs>(
+            Assert.RaisedEvent<ConversionProgressEventArgs> e = await Assert.RaisesAsync<ConversionProgressEventArgs>(
                 x => ffmpeg.Progress += x,
                 x => ffmpeg.Progress -= x,
                 async () => await ffmpeg.ConvertAsync(_fixture.VideoFile, output, default)
@@ -144,10 +144,10 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Raises_DataEvent()
         {
-            var output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            OutputFile output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.mp4")));
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
 
-            var e = await Assert.RaisesAsync<ConversionDataEventArgs>(
+            Assert.RaisedEvent<ConversionDataEventArgs> e = await Assert.RaisesAsync<ConversionDataEventArgs>(
                 x => ffmpeg.Data += x,
                 x => ffmpeg.Data -= x,
                 async () => await ffmpeg.ConvertAsync(_fixture.VideoFile, output, default)
@@ -166,13 +166,13 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Should_Process_Conversion_Using_Stream_Input()
         {
-            var output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.flv")));
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            OutputFile output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.flv")));
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
 
-             var stream = new FileStream(_fixture.FlvVideoFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
-             await using var input = new StreamInput(stream, true);
+             FileStream stream = new FileStream(_fixture.FlvVideoFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
+             await using StreamInput input = new StreamInput(stream, true);
 
-            var ffmpegTask = ffmpeg.ConvertAsync(input, output, CancellationToken.None);
+            Task<MediaFile> ffmpegTask = ffmpeg.ConvertAsync(input, output, CancellationToken.None);
             await ffmpegTask;
 
             Assert.True(File.Exists(output.FileInfo.FullName));
@@ -183,11 +183,11 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Should_Process_Conversion_Using_StandardInputWriter_Input()
         {
-            var output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.flv")));
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
-            var input = new StandardInputWriter();
+            OutputFile output = new OutputFile(new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"MediaFiles\conversionTest.flv")));
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
+            StandardInputWriter input = new StandardInputWriter();
 
-            var ffmpegTask = ffmpeg.ConvertAsync(input, output, CancellationToken.None);
+            Task<MediaFile> ffmpegTask = ffmpeg.ConvertAsync(input, output, CancellationToken.None);
             await PopulateStdInAsync(_fixture.FlvVideoFile.FileInfo, input);
             await ffmpegTask;
 
@@ -198,10 +198,10 @@ namespace FFmpeg.NET.Tests
 
         private async Task PopulateStdInAsync(FileInfo file, StandardInputWriter input)
         {
-            await using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+            await using FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
 
-            var buffer = new byte[64 * 1024];
-            var bytesRead = 0;
+            byte[] buffer = new byte[64 * 1024];
+            int bytesRead = 0;
             do
             {
                 bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);

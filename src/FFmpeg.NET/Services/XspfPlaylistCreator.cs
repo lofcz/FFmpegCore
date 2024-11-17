@@ -10,7 +10,7 @@ namespace FFmpeg.NET.Services
     {
         public string Create(IList<MetaData> metaData)
         {
-            var playlist = new Playlist
+            Playlist playlist = new Playlist
             {
                 Title = "Playlist",
                 Version = 1,
@@ -23,7 +23,7 @@ namespace FFmpeg.NET.Services
             };
 
 
-            for (var i = 0; i < metaData.Count; i++)
+            for (int i = 0; i < metaData.Count; i++)
             {
                 playlist.TrackList[i] =
                     new Track
@@ -40,10 +40,10 @@ namespace FFmpeg.NET.Services
                 playlist.Extension.Items[i] = new Item {TId = i};
             }
 
-            using (var sw = new Utf8StringWriter())
-            using (var xmlWriter = XmlWriter.Create(sw, new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8}))
+            using (Utf8StringWriter sw = new Utf8StringWriter())
+            using (XmlWriter xmlWriter = XmlWriter.Create(sw, new XmlWriterSettings {Indent = true, Encoding = Encoding.UTF8}))
             {
-                var namespaces = new XmlSerializerNamespaces();
+                XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
                 namespaces.Add("", "http://xspf.org/ns/0/");
                 namespaces.Add("vlc", "http://www.videolan.org/vlc/playlist/ns/0/");
                 new XmlSerializer(typeof(Playlist)).Serialize(xmlWriter, playlist, namespaces);

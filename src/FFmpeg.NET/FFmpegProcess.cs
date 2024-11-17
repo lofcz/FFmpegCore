@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using FFmpeg.NET.Events;
@@ -29,23 +30,23 @@ namespace FFmpeg.NET
 		{
 			_messages = new List<string>();
 			_caughtException = null;
-			var arguments = FFmpegArgumentBuilder.Build(_parameters);
-			var startInfo = GenerateStartInfo(_ffmpegFilePath, arguments, _parameters);
+			string arguments = FFmpegArgumentBuilder.Build(_parameters);
+			ProcessStartInfo startInfo = GenerateStartInfo(_ffmpegFilePath, arguments, _parameters);
 			await ExecuteAsync(startInfo, _parameters, cancellationToken).ConfigureAwait(false);
 		}
 
 		private async Task ExecuteAsync(ProcessStartInfo startInfo, FFmpegParameters parameters, CancellationToken cancellationToken)
 		{
-			using var ffmpegProcess = new Process { StartInfo = startInfo };
+			using Process ffmpegProcess = new Process { StartInfo = startInfo };
 			ffmpegProcess.ErrorDataReceived += OnDataHandler;
 
 			Task<int> task = null;
 			try
 			{
-				var useStandardInput = _parameters.Input?.UseStandardInput == true;
+				bool useStandardInput = _parameters.Input?.UseStandardInput == true;
 				task = ffmpegProcess.WaitForExitAsync(useStandardInput, null, cancellationToken);
 
-				var inputHandler = _parameters.Input as IProcessExecutionHandler;
+				IProcessExecutionHandler inputHandler = _parameters.Input as IProcessExecutionHandler;
 
 				if (inputHandler != null) await inputHandler.HandleProcessStartedAsync(ffmpegProcess, cancellationToken).ConfigureAwait(false);
 
@@ -98,14 +99,14 @@ namespace FFmpeg.NET
 		private void TryUpdateMediaInfo(string data)
 		{
 			if (_mediaInfo == null)
-				if (RegexEngine.IsMediaInfo(data, out var newMediaInfo))
+				if (RegexEngine.IsMediaInfo(data, out MediaInfo newMediaInfo))
 					_mediaInfo = newMediaInfo;
 		}
 
 		private void OnException(List<string> messages, FFmpegParameters parameters, int exitCode, Exception caughtException)
 		{
-			var exceptionMessage = GetExceptionMessage(messages);
-			var exception = new FFmpegException(exceptionMessage, caughtException, exitCode);
+			string exceptionMessage = GetExceptionMessage(messages);
+			FFmpegException exception = new FFmpegException(exceptionMessage, caughtException, exitCode);
 			OnConversionError(new ConversionErrorEventArgs(exception, parameters.Input, parameters.Output));
 		}
 
@@ -117,7 +118,7 @@ namespace FFmpeg.NET
 
 		private void FFmpegProcessOnErrorDataReceived(DataReceivedEventArgs e, FFmpegParameters parameters, ref Exception exception, List<string> messages)
 		{
-			var totalMediaDuration = new TimeSpan();
+			TimeSpan totalMediaDuration = new TimeSpan();
 			if (e.Data == null)
 				return;
 
@@ -130,7 +131,7 @@ namespace FFmpeg.NET
 					RegexEngine.TestVideo(e.Data, parameters);
 					RegexEngine.TestAudio(e.Data, parameters);
 
-					var matchDuration = RegexEngine._index[RegexEngine.Find.Duration].Match(e.Data);
+					Match matchDuration = RegexEngine._index[RegexEngine.Find.Duration].Match(e.Data);
 					if (matchDuration.Success)
 						if (parameters.Input is IHasMetaData input)
 						{
@@ -145,7 +146,7 @@ namespace FFmpeg.NET
 						}
 				}
 
-				if (RegexEngine.IsProgressData(e.Data, out var progressData))
+				if (RegexEngine.IsProgressData(e.Data, out ProgressData progressData))
 				{
 					if (parameters.Input != null) progressData.TotalDuration = parameters.Input.MetaData?.Duration ?? totalMediaDuration;
 

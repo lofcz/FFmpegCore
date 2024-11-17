@@ -14,19 +14,19 @@ namespace FFmpeg.NET.Sample
                 // capture desktop with ffmpeg
                 // ffmpeg -y -f gdigrab -framerate 10 -video_size 1920x1080 -i desktop output.mp4
 
-                var inputFile = new InputFile(@"..\..\..\..\..\tests\FFmpeg.NET.Tests\MediaFiles\SampleVideo_1280x720_1mb.mp4");
-                var outputFile = new OutputFile(@"output.mkv");
-                var thumbNailFile = new OutputFile(@"thumb.png");
+                InputFile inputFile = new InputFile(@"..\..\..\..\..\tests\FFmpeg.NET.Tests\MediaFiles\SampleVideo_1280x720_1mb.mp4");
+                OutputFile outputFile = new OutputFile(@"output.mkv");
+                OutputFile thumbNailFile = new OutputFile(@"thumb.png");
 
-                var ffmpeg = new Engine(@"..\..\..\..\..\lib\ffmpeg\v4\ffmpeg.exe");
+                Engine ffmpeg = new Engine(@"..\..\..\..\..\lib\ffmpeg\v4\ffmpeg.exe");
                 ffmpeg.Progress += OnProgress;
                 ffmpeg.Data += OnData;
                 ffmpeg.Error += OnError;
                 ffmpeg.Complete += OnComplete;
 
-                var output = await ffmpeg.ConvertAsync(inputFile, outputFile, default).ConfigureAwait(false);
+                MediaFile output = await ffmpeg.ConvertAsync(inputFile, outputFile, default).ConfigureAwait(false);
 
-                var thumbNail = await ffmpeg.GetThumbnailAsync(new InputFile(output.FileInfo.FullName), thumbNailFile,
+                MediaFile thumbNail = await ffmpeg.GetThumbnailAsync(new InputFile(output.FileInfo.FullName), thumbNailFile,
                     new ConversionOptions
                     {
                         Seek = TimeSpan.FromSeconds(3),
@@ -35,7 +35,7 @@ namespace FFmpeg.NET.Sample
                     }, default)
                     .ConfigureAwait(false);
 
-                var metadata = await ffmpeg.GetMetaDataAsync(new InputFile(output.FileInfo.FullName), default).ConfigureAwait(false);
+                MetaData metadata = await ffmpeg.GetMetaDataAsync(new InputFile(output.FileInfo.FullName), default).ConfigureAwait(false);
 
                 Console.WriteLine(metadata.FileInfo.FullName);
                 Console.WriteLine(metadata);

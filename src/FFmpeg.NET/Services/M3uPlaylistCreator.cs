@@ -12,9 +12,9 @@ namespace FFmpeg.NET.Services
             if (metaData == null)
                 throw new ArgumentException(nameof(metaData));
 
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.AppendLine("#EXTM3U");
-            foreach (var meta in metaData)
+            foreach (MetaData meta in metaData)
             {
                 sb.AppendLine($"#EXTINF:{(int) meta.Duration.TotalSeconds},{meta.FileInfo.Name}");
                 sb.AppendLine($"file:///{meta.FileInfo.FullName.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}");

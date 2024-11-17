@@ -23,14 +23,14 @@ namespace FFmpeg.NET
 
         private static string GetMetadata(IInputArgument input)
         {
-            var noStdInArg = input.UseStandardInput ? "-nostdin" : string.Empty;
+            string noStdInArg = input.UseStandardInput ? "-nostdin" : string.Empty;
             return $"-i {input.Argument} {noStdInArg} -f ffmetadata -";;
         }
 
         private static string GetThumbnail(IInputArgument input, IOutputArgument output, ConversionOptions conversionOptions)
         {
-            var defaultTimeSpan = TimeSpan.FromSeconds(1);
-            var commandBuilder = new StringBuilder();
+            TimeSpan defaultTimeSpan = TimeSpan.FromSeconds(1);
+            StringBuilder commandBuilder = new StringBuilder();
 
             commandBuilder.AppendFormat(CultureInfo.InvariantCulture, " -ss {0} ", conversionOptions?.Seek.GetValueOrDefault(defaultTimeSpan).TotalSeconds ?? defaultTimeSpan.TotalSeconds);
 
@@ -60,7 +60,7 @@ namespace FFmpeg.NET
 
         private static string Convert(IInputArgument input, IOutputArgument output, ConversionOptions conversionOptions)
         {
-            var commandBuilder = new StringBuilder();
+            StringBuilder commandBuilder = new StringBuilder();
 
             if (input.UseStandardInput)
             {
@@ -209,7 +209,7 @@ namespace FFmpeg.NET
         {
             if (conversionOptions.SourceCrop != null)
             {
-                var crop = conversionOptions.SourceCrop;
+                CropRectangle crop = conversionOptions.SourceCrop;
                 commandBuilder.AppendFormat(" -filter:v \"crop={0}:{1}:{2}:{3}\" ", crop.Width, crop.Height, crop.X, crop.Y);
             }
             return commandBuilder;
@@ -219,7 +219,7 @@ namespace FFmpeg.NET
         {
             if (conversionOptions.VideoAspectRatio != VideoAspectRatio.Default)
             {
-                var ratio = conversionOptions.VideoAspectRatio.ToString();
+                string ratio = conversionOptions.VideoAspectRatio.ToString();
                 ratio = ratio.Substring(1);
                 ratio = ratio.Replace("_", ":");
 
@@ -236,7 +236,7 @@ namespace FFmpeg.NET
             }
             else if (conversionOptions.VideoSize != VideoSize.Default)
             {
-                var size = conversionOptions.VideoSize.ToString().ToLowerInvariant();
+                string size = conversionOptions.VideoSize.ToString().ToLowerInvariant();
                 if (size.StartsWith("_"))
                     size = size.Replace("_", "");
                 if (size.Contains("_"))
@@ -252,7 +252,7 @@ namespace FFmpeg.NET
         {
             if (conversionOptions.VideoCodec != VideoCodec.Default)
             {
-                var codec = conversionOptions.VideoCodec.ToString().ToLowerInvariant();
+                string codec = conversionOptions.VideoCodec.ToString().ToLowerInvariant();
                 commandBuilder.AppendFormat(" -vcodec {0} ", codec);
             }
             return commandBuilder;
@@ -262,7 +262,7 @@ namespace FFmpeg.NET
         {
             if (conversionOptions.VideoFormat != VideoFormat.Default)
             {
-                var format = conversionOptions.VideoFormat.ToString().ToLowerInvariant();
+                string format = conversionOptions.VideoFormat.ToString().ToLowerInvariant();
                 if (format.StartsWith("_"))
                     format = format.Replace("_", "");
 

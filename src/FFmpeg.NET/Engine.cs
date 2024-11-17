@@ -33,7 +33,7 @@ namespace FFmpeg.NET
 
         public async Task<MetaData> GetMetaDataAsync(IInputArgument mediaFile, CancellationToken cancellationToken)
         {
-            var parameters = new FFmpegParameters
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 Task = FFmpegTask.GetMetaData,
                 Input = mediaFile
@@ -48,7 +48,7 @@ namespace FFmpeg.NET
 
         public async Task<MediaFile> GetThumbnailAsync(IInputArgument input, OutputFile output, ConversionOptions options, CancellationToken cancellationToken)
         {
-            var parameters = new FFmpegParameters
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 Task = FFmpegTask.GetThumbnail,
                 Input = input,
@@ -65,7 +65,7 @@ namespace FFmpeg.NET
 
         public async Task<MediaFile> ConvertAsync(IInputArgument input, OutputFile output, ConversionOptions options, CancellationToken cancellationToken)
         {
-            var parameters = new FFmpegParameters
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 Task = FFmpegTask.Convert,
                 Input = input,
@@ -79,7 +79,7 @@ namespace FFmpeg.NET
 
         public async Task<Stream> ConvertAsync(IInputArgument input, ConversionOptions options, CancellationToken cancellationToken)
         {
-            var ms = new MemoryStream();
+            MemoryStream ms = new MemoryStream();
             await ConvertAsync(input, ms, options, cancellationToken).ConfigureAwait(false);
             ms.Position = 0;
             return ms;
@@ -87,8 +87,8 @@ namespace FFmpeg.NET
 
         public async Task ConvertAsync(IInputArgument input, Stream output, ConversionOptions options, CancellationToken cancellationToken)
         {
-            var pipeName = $"{_pipePrefix}{Guid.NewGuid()}";
-            var parameters = new FFmpegParameters
+            string pipeName = $"{_pipePrefix}{Guid.NewGuid()}";
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 Task = FFmpegTask.Convert,
                 Input = input,
@@ -96,8 +96,8 @@ namespace FFmpeg.NET
                 ConversionOptions = options
             };
 
-            var process = CreateProcess(parameters);
-            var pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            FFmpegProcess process = CreateProcess(parameters);
+            NamedPipeServerStream pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
             await pipe.WaitForConnectionAsync(cancellationToken);
             await Task.WhenAll(
@@ -113,19 +113,19 @@ namespace FFmpeg.NET
 
         public async Task ConvertAsync(IArgument argument, Stream output, CancellationToken cancellationToken)
         {
-            var outputPipeName = $"{_pipePrefix}{Guid.NewGuid()}";
-            var outputArgument = new OutputPipe(GetPipePath(outputPipeName));
-            var pipe = new NamedPipeServerStream(outputPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            string outputPipeName = $"{_pipePrefix}{Guid.NewGuid()}";
+            OutputPipe outputArgument = new OutputPipe(GetPipePath(outputPipeName));
+            NamedPipeServerStream pipe = new NamedPipeServerStream(outputPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
-            var arguments = argument.Argument + $" {outputArgument.Argument}";
-            var parameters = new FFmpegParameters { CustomArguments = arguments };
-            var process = CreateProcess(parameters);
+            string arguments = argument.Argument + $" {outputArgument.Argument}";
+            FFmpegParameters parameters = new FFmpegParameters { CustomArguments = arguments };
+            FFmpegProcess process = CreateProcess(parameters);
 
             await Task.WhenAll(
                 pipe.WaitForConnectionAsync(cancellationToken).ContinueWith(async x =>
                 {
                     await pipe.CopyToAsync(output, cancellationToken);
-                }),
+                }, cancellationToken),
                 process.ExecuteAsync(cancellationToken).ContinueWith(x =>
                 {
                     pipe.Disconnect();
@@ -138,14 +138,14 @@ namespace FFmpeg.NET
 
         private async Task ExecuteAsync(FFmpegParameters parameters, CancellationToken cancellationToken)
         {
-            var ffmpegProcess = CreateProcess(parameters);
+            FFmpegProcess ffmpegProcess = CreateProcess(parameters);
             await ffmpegProcess.ExecuteAsync(cancellationToken).ConfigureAwait(false);
             Cleanup(ffmpegProcess);
         }
 
         public async Task ExecuteAsync(string arguments, CancellationToken cancellationToken)
         {
-            var parameters = new FFmpegParameters
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 CustomArguments = arguments,
             };
@@ -156,7 +156,7 @@ namespace FFmpeg.NET
         // it should be considered if ExecuteAsync(FFmpegParameters parameters, CancellationToken cancellationToken) should be made public
         public async Task ExecuteAsync(string arguments, string workingDirectory, CancellationToken cancellationToken)
         {
-            var parameters = new FFmpegParameters
+            FFmpegParameters parameters = new FFmpegParameters
             {
                 CustomArguments = arguments,
                 WorkingDirectory = workingDirectory
@@ -167,7 +167,7 @@ namespace FFmpeg.NET
 
         private FFmpegProcess CreateProcess(FFmpegParameters parameters)
         {
-            var ffmpegProcess = new FFmpegProcess(parameters, _ffmpegPath);
+            FFmpegProcess ffmpegProcess = new FFmpegProcess(parameters, _ffmpegPath);
             ffmpegProcess.Progress += OnProgress;
             ffmpegProcess.Completed += OnComplete;
             ffmpegProcess.Error += OnError;
@@ -185,10 +185,7 @@ namespace FFmpeg.NET
 
         private static string GetPipePath(string pipeName)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return $@"\\.\pipe\{pipeName}";
-            else
-                return $"unix:/tmp/CoreFxPipe_{pipeName}";
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? $@"\\.\pipe\{pipeName}" : $"unix:/tmp/CoreFxPipe_{pipeName}";
         }
 
         private void OnProgress(ConversionProgressEventArgs e) => Progress?.Invoke(this, e);

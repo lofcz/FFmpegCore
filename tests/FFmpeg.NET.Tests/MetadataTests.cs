@@ -65,10 +65,10 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Can_Read_Audio_Metadata()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
 
-            var audioFile = _fixture.AudioFile;
-            var metaData = await ffmpeg.GetMetaDataAsync(audioFile, default).ConfigureAwait(false);
+            InputFile audioFile = _fixture.AudioFile;
+            MetaData metaData = await ffmpeg.GetMetaDataAsync(audioFile, default).ConfigureAwait(false);
 
             Assert.NotNull(metaData);
 
@@ -85,11 +85,11 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Can_Read_Video_Metadata()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             ffmpeg.Data += (s, e) => _output.WriteLine(e.Data ?? string.Empty);
 
-            var videoFile = _fixture.VideoFile;
-            var metaData = await ffmpeg.GetMetaDataAsync(videoFile, default).ConfigureAwait(false);
+            InputFile videoFile = _fixture.VideoFile;
+            MetaData metaData = await ffmpeg.GetMetaDataAsync(videoFile, default).ConfigureAwait(false);
 
             Assert.NotNull(metaData);
             Assert.Equal(metaData.FileInfo, videoFile.FileInfo);
@@ -114,7 +114,7 @@ namespace FFmpeg.NET.Tests
         [InlineData("Stream #0:0(und): Video: hevc (Main 10) (hvc1 / 0x31637668), yuv420p10le(tv, bt2020/arib-std-b67, progressive), 1920x1080, 8517 kb/s, 29.98 fps, 29.97 tbr, 600 tbn, 600 tbc (default)", 8517, "yuv420p10le(tv, bt2020/arib-std-b67, progressive)", "1920x1080", "hevc (Main 10) (hvc1 / 0x31637668)")]
         public void RegexEngine_Can_Read_Video_MetaData(string data, int bitrate, string colorModel, string frameSize, string format)
         {
-            var param = new FFmpegParameters
+            FFmpegParameters param = new FFmpegParameters
             {
                 Input = new InputFile(_fixture.VideoFile.FileInfo)
             };
@@ -132,7 +132,7 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task CustomParameters()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             await ffmpeg.ExecuteAsync($"-i \"{_fixture.VideoFile.FileInfo.FullName}\" -f ffmetadata -", default).ConfigureAwait(false);
         }
 
@@ -156,13 +156,13 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Read_Video_Metadata_Using_Stream_Input()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             ffmpeg.Data += (s, e) => _output.WriteLine(e.Data ?? string.Empty);
 
-            var stream = new FileStream(_fixture.FlvVideoFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
-            await using var input = new StreamInput(stream, true);
+            FileStream stream = new FileStream(_fixture.FlvVideoFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
+            await using StreamInput input = new StreamInput(stream, true);
 
-            var metaData = await ffmpeg.GetMetaDataAsync(input, CancellationToken.None); ;
+            MetaData metaData = await ffmpeg.GetMetaDataAsync(input, CancellationToken.None); ;
 
             Assert.Equal("h264 (High)", metaData.VideoData.Format);
             Assert.Equal("yuv420p(progressive)", metaData.VideoData.ColorModel);
@@ -181,13 +181,13 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Read_Audio_Metadata_Using_Stream_Input()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             ffmpeg.Data += (s, e) => _output.WriteLine(e.Data ?? string.Empty);
 
-            var stream = new FileStream(_fixture.AudioFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
-            await using var input = new StreamInput(stream, true);
+            FileStream stream = new FileStream(_fixture.AudioFile.FileInfo.FullName, FileMode.Open, FileAccess.Read);
+            await using StreamInput input = new StreamInput(stream, true);
 
-            var metaData = await ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
+            MetaData metaData = await ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
 
             Assert.NotNull(metaData);
             Assert.NotNull(metaData.AudioData);
@@ -201,15 +201,15 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Read_Video_Metadata_Using_StandardInputWriter_Input()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             ffmpeg.Data += (s, e) => _output.WriteLine(e.Data ?? string.Empty);
 
-            var videoFile = _fixture.FlvVideoFile;
-            var input = new StandardInputWriter();
+            InputFile videoFile = _fixture.FlvVideoFile;
+            StandardInputWriter input = new StandardInputWriter();
 
-            var ffmpegTask = ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
+            Task<MetaData> ffmpegTask = ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
             await PopulateStdInAsync(videoFile.FileInfo, input);
-            var metaData = await ffmpegTask;
+            MetaData metaData = await ffmpegTask;
 
             Assert.Equal("h264 (High)", metaData.VideoData.Format);
             Assert.Equal("yuv420p(progressive)", metaData.VideoData.ColorModel);
@@ -228,15 +228,15 @@ namespace FFmpeg.NET.Tests
         [Fact]
         public async Task FFmpeg_Read_Audio_Metadata_Using_StandardInputWriter_Input()
         {
-            var ffmpeg = new Engine(_fixture.FFmpegPath);
+            Engine ffmpeg = new Engine(_fixture.FFmpegPath);
             ffmpeg.Data += (s, e) => _output.WriteLine(e.Data ?? string.Empty);
 
-            var audioFile = _fixture.AudioFile;
-            var input = new StandardInputWriter();
+            InputFile audioFile = _fixture.AudioFile;
+            StandardInputWriter input = new StandardInputWriter();
 
-            var ffmpegTask = ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
+            Task<MetaData> ffmpegTask = ffmpeg.GetMetaDataAsync(input, CancellationToken.None);
             await PopulateStdInAsync(audioFile.FileInfo, input);
-            var metaData = await ffmpegTask;
+            MetaData metaData = await ffmpegTask;
 
             Assert.NotNull(metaData);
             Assert.NotNull(metaData.AudioData);
@@ -249,10 +249,10 @@ namespace FFmpeg.NET.Tests
 
         private async Task PopulateStdInAsync(FileInfo file, StandardInputWriter input)
         {
-            await using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
+            await using FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read);
 
-            var buffer = new byte[64 * 1024];
-            var bytesRead = 0;
+            byte[] buffer = new byte[64 * 1024];
+            int bytesRead = 0;
             do
             {
                 bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);

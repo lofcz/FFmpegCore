@@ -45,21 +45,21 @@ namespace FFmpeg.NET
         {
             progressData = null;
 
-            var matchFrame = _index[Find.ConvertProgressFrame].Match(data);
-            var matchFps = _index[Find.ConvertProgressFps].Match(data);
-            var matchSize = _index[Find.ConvertProgressSize].Match(data);
-            var matchTime = _index[Find.ConvertProgressTime].Match(data);
-            var matchBitrate = _index[Find.ConvertProgressBitrate].Match(data);
+            Match matchFrame = _index[Find.ConvertProgressFrame].Match(data);
+            Match matchFps = _index[Find.ConvertProgressFps].Match(data);
+            Match matchSize = _index[Find.ConvertProgressSize].Match(data);
+            Match matchTime = _index[Find.ConvertProgressTime].Match(data);
+            Match matchBitrate = _index[Find.ConvertProgressBitrate].Match(data);
 
             if (!matchTime.Success)
                 return false;
 
-            TimeSpanLargeTryParse(matchTime.Groups[1].Value, out var processedDuration);
+            TimeSpanLargeTryParse(matchTime.Groups[1].Value, out TimeSpan processedDuration);
 
-            var frame = GetLongValue(matchFrame);
-            var fps = GetDoubleValue(matchFps);
-            var sizeKb = GetIntValue(matchSize);
-            var bitrate = GetDoubleValue(matchBitrate);
+            long? frame = GetLongValue(matchFrame);
+            double? fps = GetDoubleValue(matchFps);
+            int? sizeKb = GetIntValue(matchSize);
+            double? bitrate = GetDoubleValue(matchBitrate);
 
             progressData = new ProgressData(processedDuration, TimeSpan.Zero, frame, fps, sizeKb, bitrate);
 
@@ -70,15 +70,15 @@ namespace FFmpeg.NET
             mediaInfo = null;
 
             if (data == null || data == "") return false;
-            var matchBitrate = _index[Find.BitRate].Match(data);
-            var matchDuration = _index[Find.Duration].Match(data);
+            Match matchBitrate = _index[Find.BitRate].Match(data);
+            Match matchDuration = _index[Find.Duration].Match(data);
 
             if (!matchBitrate.Success || !matchDuration.Success)
                 return false;
 
-            TimeSpanLargeTryParse(matchDuration.Groups[1].Value, out var clipDuration);
+            TimeSpanLargeTryParse(matchDuration.Groups[1].Value, out TimeSpan clipDuration);
 
-            var bitrate = GetDoubleValue(matchBitrate);
+            double? bitrate = GetDoubleValue(matchBitrate);
             if (bitrate.HasValue)
             {
                 mediaInfo = new MediaInfo(bitrate.Value, clipDuration);
@@ -97,11 +97,11 @@ namespace FFmpeg.NET
             result = TimeSpan.Zero;
 
             // Process hours.
-            var start = 0;
-            var end = str.IndexOf(':', start);
+            int start = 0;
+            int end = str.IndexOf(':', start);
             if (end < 0)
                 return false;
-            if (!int.TryParse(str[start..end], out var hours))
+            if (!int.TryParse(str[start..end], out int hours))
                 return false;
 
             // Process minutes
@@ -109,13 +109,13 @@ namespace FFmpeg.NET
             end = str.IndexOf(':', start);
             if (end < 0)
                 return false;
-            if (!int.TryParse(str[start..end], out var minutes))
+            if (!int.TryParse(str[start..end], out int minutes))
                 return false;
 
             // Process seconds
             start = end + 1;
             // ffmpeg doesnt respect the computers culture
-            if (!double.TryParse(str[start..], NumberStyles.Number, CultureInfo.InvariantCulture, out var seconds))
+            if (!double.TryParse(str[start..], NumberStyles.Number, CultureInfo.InvariantCulture, out double seconds))
                 return false;
 
             result = new TimeSpan(0, hours, minutes, 0, (int)Math.Round(seconds * 1000.0));
@@ -123,34 +123,34 @@ namespace FFmpeg.NET
         }
 
         private static long? GetLongValue(Match match)
-            => long.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            => long.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out long result)
                 ? (long?)result
                 : null;
 
         private static double? GetDoubleValue(Match match)
-            => double.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            => double.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out double result)
                 ? (double?)result
                 : null;
 
         private static int? GetIntValue(Match match)
-            => int.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            => int.TryParse(match.Groups[1].Value, NumberStyles.Any, CultureInfo.InvariantCulture, out int result)
                 ? (int?)result
                 : null;
 
         public static void TestVideo(string data, FFmpegParameters engine)
         {
-            var matchMetaVideo = _index[Find.MetaVideo].Match(data);
+            Match matchMetaVideo = _index[Find.MetaVideo].Match(data);
 
             if (!matchMetaVideo.Success)
                 return;
 
-            var fullMetadata = matchMetaVideo.Groups[1].ToString();
+            string fullMetadata = matchMetaVideo.Groups[1].ToString();
 
-            var matchVideoFormatColorSize = _index[Find.VideoFormatColorSize].Match(fullMetadata).Groups;
-            var matchVideoFps = _index[Find.VideoFps].Match(fullMetadata).Groups;
-            var matchVideoBitRate = _index[Find.BitRate].Match(fullMetadata);
+            GroupCollection matchVideoFormatColorSize = _index[Find.VideoFormatColorSize].Match(fullMetadata).Groups;
+            GroupCollection matchVideoFps = _index[Find.VideoFps].Match(fullMetadata).Groups;
+            Match matchVideoBitRate = _index[Find.BitRate].Match(fullMetadata);
 
-            var input = engine.Input;
+            IInputArgument input = engine.Input;
             if (input.MetaData == null)
                 input.MetaData = new MetaData();
 
@@ -170,16 +170,16 @@ namespace FFmpeg.NET
 
         public static void TestAudio(string data, FFmpegParameters engine)
         {
-            var matchMetaAudio = _index[Find.MetaAudio].Match(data);
+            Match matchMetaAudio = _index[Find.MetaAudio].Match(data);
 
             if (!matchMetaAudio.Success)
                 return;
 
-            var fullMetadata = matchMetaAudio.Groups[1].ToString();
+            string fullMetadata = matchMetaAudio.Groups[1].ToString();
 
-            var matchAudioFormatHzChannel = _index[Find.AudioFormatHzChannel].Match(fullMetadata).Groups;
-            var matchAudioBitRate = _index[Find.BitRate].Match(fullMetadata).Groups;
-            var input = engine.Input;
+            GroupCollection matchAudioFormatHzChannel = _index[Find.AudioFormatHzChannel].Match(fullMetadata).Groups;
+            GroupCollection matchAudioBitRate = _index[Find.BitRate].Match(fullMetadata).Groups;
+            IInputArgument input = engine.Input;
             if (input.MetaData == null)
                 input.MetaData = new MetaData();
 

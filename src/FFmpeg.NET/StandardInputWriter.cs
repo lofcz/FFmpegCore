@@ -45,7 +45,7 @@ namespace FFmpeg.NET
 
             try
             {
-                var inputStream = _process.StandardInput.BaseStream;
+                Stream inputStream = _process.StandardInput.BaseStream;
                 await inputStream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
             }
             catch (IOException ioException) when (ioException.HResult == ChannelClosedHResult)

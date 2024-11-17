@@ -9,9 +9,9 @@ namespace FFmpeg.NET.Extensions
 	{
 		public static Task<int> WaitForExitAsync(this Process process, bool stdInDataInput, Action<int> onException, CancellationToken cancellationToken = default)
 		{
-			var ctRegistration = new CancellationTokenRegistration();
-			var mustUnregister = false;
-			var tcs = new TaskCompletionSource<int>();
+			CancellationTokenRegistration ctRegistration = new CancellationTokenRegistration();
+			bool mustUnregister = false;
+			TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
 			if (cancellationToken != default)
 			{
 				mustUnregister = true;
@@ -59,7 +59,7 @@ namespace FFmpeg.NET.Extensions
 			process.EnableRaisingEvents = true;
 			process.Exited += processOnExited;
 
-			var started = process.Start();
+			bool started = process.Start();
 			if (!started)
 				tcs.TrySetException(new InvalidOperationException($"Could not start process {process}"));
 
