@@ -1,9 +1,9 @@
-[<img src="lib/ffmpeg/v4/icon.png" alt="drawing" width="24" height="24" /> FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET)
+[<img src="lib/ffmpeg/v4/icon.png" alt="drawing" width="24" height="24" /> FFmpegCore](https://github.com/cmxl/FFmpegCore)
 ============
 
-[FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET) provides a straightforward interface for handling media data, making tasks such as converting, slicing and editing both audio and video completely effortless.
+[FFmpegCore](https://github.com/cmxl/FFmpegCore) provides a straightforward interface for handling media data, making tasks such as converting, slicing and editing both audio and video completely effortless.
 
-Under the hood, [FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET) is a .NET wrapper for FFmpeg; a free (LGPLv2.1) multimedia framework containing multiple audio and video codecs, supporting muxing, demuxing and transcoding tasks on many media formats.
+Under the hood, [FFmpegCore](https://github.com/cmxl/FFmpegCore) is a .NET wrapper for FFmpeg; a free (LGPLv2.1) multimedia framework containing multiple audio and video codecs, supporting muxing, demuxing and transcoding tasks on many media formats.
 
 Some major parts are taken from https://github.com/AydinAdn/MediaToolkit.
 Many features have been refactored. The library has been ported to Netstandard and made threadsafe.
@@ -14,13 +14,13 @@ You need to provide the ffmpeg executable path to the `Engine` constructor.
 
 | Service | Status |
 | --- | --- |
-| Travis CI | [![Build Status](https://travis-ci.com/cmxl/FFmpeg.NET.svg?branch=master)](https://travis-ci.com/cmxl/FFmpeg.NET) |
+| Travis CI | [![Build Status](https://travis-ci.com/cmxl/FFmpegCore.svg?branch=master)](https://travis-ci.com/cmxl/FFmpegCore) |
 
 ## Packages
 
 | Package | NuGet |
 | --- | --- |
-| xFFmpeg.NET | [![NuGet](https://buildstats.info/nuget/xFFmpeg.NET)](https://www.nuget.org/packages/xFFmpeg.NET) |
+| xFFmpegCore | [![NuGet](https://buildstats.info/nuget/xFFmpegCore)](https://www.nuget.org/packages/xFFmpegCore) |
 
 ## Contents
 
@@ -50,9 +50,9 @@ You need to provide the ffmpeg executable path to the `Engine` constructor.
 
 ## Get started!
 
-Install [FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET) from nuget.org Package Source using the Package Manager Console with the following command
+Install [FFmpegCore](https://github.com/cmxl/FFmpegCore) from nuget.org Package Source using the Package Manager Console with the following command
 
-    PM> Install-Package xFFmpeg.NET
+    PM> Install-Package xFFmpegCore
 
 ## Samples
 
@@ -194,5 +194,5 @@ private void OnError(object sender, ConversionErrorEventArgs e)
 ### Licensing
 ---------  
 - Forwards licensing of [MediaToolkit](https://github.com/AydinAdn/MediaToolkit/blob/master/LICENSE.md)
-- [FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET) is licensed under the [MIT license](https://github.com/cmxl/FFmpeg.NET/blob/master/LICENSE.md)
-- [FFmpeg.NET](https://github.com/cmxl/FFmpeg.NET) uses [FFmpeg](http://ffmpeg.org), a multimedia framework which is licensed under the [LGPLv2.1 license](http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
+- [FFmpegCore](https://github.com/cmxl/FFmpegCore) is licensed under the [MIT license](https://github.com/cmxl/FFmpegCore/blob/master/LICENSE.md)
+- [FFmpegCore](https://github.com/cmxl/FFmpegCore) uses [FFmpeg](http://ffmpeg.org), a multimedia framework which is licensed under the [LGPLv2.1 license](http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
